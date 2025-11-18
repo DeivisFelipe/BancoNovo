@@ -1,9 +1,8 @@
 <template>
-    <div>
-        <h1>Home Page</h1>
-    </div>
+  <h1>Home Page</h1>
+  <v-btn color="primary">Botão</v-btn>
 </template>
 
 <script setup>
-// Add your script here
+// O layout é aplicado automaticamente
 </script>
