@@ -8,6 +8,7 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import AppLayout from "./Layouts/AppLayout.vue";
+import GuestLayout from "./Layouts/GuestLayout.vue";
 
 const vuetify = createVuetify({
     components,
@@ -18,7 +19,13 @@ createInertiaApp({
     resolve: (name) => {
         const pages = import.meta.glob("./Pages/**/*.vue", { eager: true });
         const page = pages[`./Pages/${name}.vue`];
-        page.default.layout = page.default.layout || AppLayout;
+
+        if (name.startsWith("Guest/")) {
+            page.default.layout = page.default.layout || GuestLayout;
+        } else {
+            page.default.layout = page.default.layout || AppLayout;
+        }
+
         return page;
     },
     setup({ el, App, props, plugin }) {
