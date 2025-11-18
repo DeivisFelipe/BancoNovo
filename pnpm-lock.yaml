@@ -20,6 +20,9 @@ importers:
       sweetalert2:
         specifier: ^11.26.3
         version: 11.26.3
+      vue:
+        specifier: ^3.5.24
+        version: 3.5.24
       vuetify:
         specifier: ^3.10.11
         version: 3.10.11(vite-plugin-vuetify@2.1.2)(vue@3.5.24)

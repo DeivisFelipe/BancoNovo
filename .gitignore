@@ -6,6 +6,7 @@
 .phpactor.json
 .phpunit.result.cache
 .history
+.pnpm-store
 /.fleet
 /.idea
 /.nova
@@ -25,3 +26,4 @@ Homestead.yaml
 Thumbs.db
 *.md
 !README.md
+check_php.php

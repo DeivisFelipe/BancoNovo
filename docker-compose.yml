@@ -43,7 +43,6 @@ services:
       - ./bootstrap/cache:/var/www/bootstrap/cache
     ports:
       - "8000:8000"
-      - "5173:5173"
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: postgres
@@ -68,7 +67,10 @@ services:
       - .:/var/www
       - /var/www/node_modules
     ports:
-      - "5174:5173"
+      - "5173:5173"
+    environment:
+      CI: "true"
+      LARAVEL_BYPASS_ENV_CHECK: "1"
     networks:
       - banconovo_network
     command: sh -c "pnpm install && pnpm run dev --host 0.0.0.0"
