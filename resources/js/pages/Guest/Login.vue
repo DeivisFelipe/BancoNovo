@@ -1,7 +1,7 @@
 <template>
   <v-card elevation="8" class="rounded-lg">
-    <v-card-title class="text-h5 text-center pa-6 bg-primary">
-      <span class="text-white">Login</span>
+    <v-card-title class="text-h4 text-center pa-6">
+      LOGIN
     </v-card-title>
     <v-card-text class="pa-6">
       <v-form>
@@ -10,12 +10,20 @@
         <v-btn color="primary" block size="large" class="mt-4 mb-4">
           Entrar
         </v-btn>
-        <v-divider class="my-4"></v-divider>
+
+        <div class="text-center my-4">
+          <div class="d-flex align-center">
+            <v-divider></v-divider>
+            <span class="mx-3 text-caption text-medium-emphasis">ou</span>
+            <v-divider></v-divider>
+          </div>
+        </div>
+
         <div class="text-center">
-          <p class="text-body-2 mb-2">Não tem uma conta?</p>
-          <v-btn variant="outlined" color="primary" block @click="$inertia.visit('/register')">
+          <span class="text-body-2">Não tem uma conta? </span>
+          <a href="/register" class="text-primary text-decoration-none font-weight-medium cursor-pointer" @click.prevent="$inertia.visit('/register')">
             Criar conta
-          </v-btn>
+          </a>
         </div>
       </v-form>
     </v-card-text>

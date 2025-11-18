@@ -7,7 +7,6 @@
           <v-col cols="12" sm="8" md="4">
             <div class="text-center mb-8">
               <h1 class="text-h3 font-weight-bold text-white mb-2">BancoNovo</h1>
-              <p class="text-subtitle-1 text-white-lighten-1">Sistema Bancário Moderno</p>
             </div>
             <slot />
           </v-col>

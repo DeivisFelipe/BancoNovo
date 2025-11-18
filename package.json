@@ -19,6 +19,7 @@
         "@inertiajs/vue3": "^2.2.18",
         "@mdi/font": "^7.4.47",
         "@vitejs/plugin-vue": "^6.0.1",
+        "sweetalert2": "^11.26.3",
         "vuetify": "^3.10.11"
     }
 }

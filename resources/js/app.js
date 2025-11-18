@@ -1,5 +1,6 @@
 import { createApp, h } from "vue";
 import { createInertiaApp } from "@inertiajs/vue3";
+import Swal from "sweetalert2";
 
 // Vuetify
 import "@mdi/font/css/materialdesignicons.css";
@@ -29,9 +30,11 @@ createInertiaApp({
         return page;
     },
     setup({ el, App, props, plugin }) {
-        createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(vuetify)
-            .mount(el);
+        const app = createApp({ render: () => h(App, props) });
+
+        // Disponibilizar SweetAlert2 globalmente
+        app.config.globalProperties.$swal = Swal;
+
+        app.use(plugin).use(vuetify).mount(el);
     },
 });
