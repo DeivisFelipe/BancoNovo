@@ -1,0 +1,87 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: banconovo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: banconovo
+      POSTGRES_USER: banconovo
+      POSTGRES_PASSWORD: banconovo123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - banconovo_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: banconovo_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@banconovo.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - banconovo_network
+    depends_on:
+      - postgres
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: banconovo_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: banconovo
+      DB_USERNAME: banconovo
+      DB_PASSWORD: banconovo123
+    networks:
+      - banconovo_network
+    depends_on:
+      - postgres
+    command: sh -c "composer install && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+
+  # Vite Dev Server
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile.vite
+    container_name: banconovo_vite
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - /var/www/node_modules
+    ports:
+      - "5174:5173"
+    networks:
+      - banconovo_network
+    command: sh -c "pnpm install && pnpm run dev --host 0.0.0.0"
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  banconovo_network:
+    driver: bridge

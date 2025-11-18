@@ -1,0 +1,3 @@
+@echo off
+echo Mostrando logs do BancoNovo...
+docker-compose logs -f
