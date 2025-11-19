@@ -205,9 +205,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { router } from "@inertiajs/vue3";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const props = defineProps({
   user: Object,
@@ -236,6 +237,9 @@ const getInitials = (name) => {
 // Estado de refresh
 const refreshing = ref(false);
 
+// Estado de áudio inicializado
+const audioInitialized = ref(false);
+
 // Modal de transferência
 const transferDialog = ref(false);
 const depositDialog = ref(false);
@@ -254,6 +258,26 @@ const usersList = ref([]);
 const selectedRecipient = ref(null);
 const selectedRecipientData = ref(null);
 
+// Audio para notificação
+const notificationSound = new Audio("/sounds/notification.mp3");
+
+// Função para inicializar o áudio (precisa de interação do usuário)
+const initializeAudio = () => {
+  if (!audioInitialized.value) {
+    // Tocar e pausar imediatamente para "desbloquear" o autoplay
+    notificationSound
+      .play()
+      .then(() => {
+        notificationSound.pause();
+        notificationSound.currentTime = 0;
+        audioInitialized.value = true;
+      })
+      .catch(() => {
+        // Navegador bloqueou o autoplay
+      });
+  }
+};
+
 // Debounce para busca
 let searchTimeout = null;
 watch(searchQuery, (newValue) => {
@@ -270,7 +294,6 @@ watch(searchQuery, (newValue) => {
         });
         usersList.value = response.data;
       } catch (error) {
-        console.error("Erro ao buscar usuários:", error);
         usersList.value = [];
       } finally {
         searchLoading.value = false;
@@ -293,7 +316,53 @@ watch(selectedRecipient, (newValue) => {
   }
 });
 
+// WebSocket - Laravel Echo
+let echoChannel = null;
+
+onMounted(() => {
+  // Conectar ao canal privado do usuário
+  echoChannel = window.Echo.private(`user.${props.user.id}`);
+
+  echoChannel.listen(".transaction.received", (data) => {
+    // Tocar som de notificação
+    if (audioInitialized.value) {
+      notificationSound.play().catch(() => {});
+    }
+
+    // Mostrar notificação no canto inferior direito
+    Swal.fire({
+      title: "💰 Nova Transação!",
+      html: `
+        <div style="text-align: left;">
+          <p><strong>De:</strong> ${data.from_name}</p>
+          <p><strong>Conta:</strong> ${data.from_account}</p>
+          <p><strong>Valor:</strong> ${formatCurrency(data.amount)}</p>
+          <p><strong>Data:</strong> ${data.date}</p>
+        </div>
+      `,
+      icon: "success",
+      position: "bottom-end",
+      toast: true,
+      showConfirmButton: false,
+      timer: 5000,
+      timerProgressBar: true,
+    });
+
+    // Atualizar lista de transações e saldo
+    refreshData();
+  });
+});
+
+onUnmounted(() => {
+  // Desconectar do canal ao sair da página
+  if (echoChannel) {
+    echoChannel.stopListening(".transaction.received");
+    window.Echo.leave(`user.${props.user.id}`);
+  }
+});
+
 const openTransferDialog = () => {
+  initializeAudio(); // Inicializar áudio na primeira interação
   transferDialog.value = true;
 };
 
@@ -310,6 +379,7 @@ const closeTransferDialog = () => {
 };
 
 const openDepositDialog = () => {
+  initializeAudio(); // Inicializar áudio na primeira interação
   depositDialog.value = true;
 };
 

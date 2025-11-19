@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TransactionReceived;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,13 +20,19 @@ class TransactionController extends Controller
         ]);
 
         try {
-            Transaction::create([
+            $transaction = Transaction::create([
                 'from_user_id' => null, // Depósito não tem origem
                 'to_user_id' => auth()->id(),
                 'amount' => $validated['amount'],
                 'type' => 'deposit',
                 'description' => 'Depósito na conta',
             ]);
+
+            // Carregar relacionamentos
+            $transaction->load(['fromUser', 'toUser']);
+
+            // Disparar evento de transação recebida
+            event(new TransactionReceived($transaction, auth()->id()));
 
             return back()->with('success', [
                 'title' => 'Depósito realizado!',
@@ -116,7 +123,7 @@ class TransactionController extends Controller
         try {
             DB::beginTransaction();
 
-            Transaction::create([
+            $transaction = Transaction::create([
                 'from_user_id' => $user->id,
                 'to_user_id' => $recipient->id,
                 'amount' => $validated['amount'],
@@ -124,7 +131,13 @@ class TransactionController extends Controller
                 'description' => sprintf('Transferência para %s (Conta: %s)', $recipient->name, $recipient->account_number),
             ]);
 
+            // Carregar relacionamentos
+            $transaction->load(['fromUser', 'toUser']);
+
             DB::commit();
+
+            // Disparar evento de transação recebida para o destinatário
+            event(new TransactionReceived($transaction, $recipient->id));
 
             $saldoFuturo = $user->getBalanceAfter($validated['amount']);
 
