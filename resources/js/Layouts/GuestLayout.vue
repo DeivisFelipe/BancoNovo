@@ -18,6 +18,9 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
+import { useFlashMessages } from "../composables/useFlashMessages";
+
+useFlashMessages();
 
 const canvas = ref(null);
 let animationId = null;

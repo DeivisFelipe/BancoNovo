@@ -18,8 +18,8 @@ const vuetify = createVuetify({
 
 createInertiaApp({
     resolve: (name) => {
-        const pages = import.meta.glob("./Pages/**/*.vue", { eager: true });
-        const page = pages[`./Pages/${name}.vue`];
+        const pages = import.meta.glob("./pages/**/*.vue", { eager: true });
+        const page = pages[`./pages/${name}.vue`];
 
         if (name.startsWith("Guest/")) {
             page.default.layout = page.default.layout || GuestLayout;

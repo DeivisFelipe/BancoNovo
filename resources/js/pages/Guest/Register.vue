@@ -4,12 +4,12 @@
       REGISTRAR
     </v-card-title>
     <v-card-text class="pa-6">
-      <v-form>
-        <v-text-field label="Nome" variant="outlined" prepend-inner-icon="mdi-account" class="mb-2" />
-        <v-text-field label="Email" type="email" variant="outlined" prepend-inner-icon="mdi-email" class="mb-2" />
-        <v-text-field label="Senha" type="password" variant="outlined" prepend-inner-icon="mdi-lock" class="mb-2" />
-        <v-text-field label="Confirmar Senha" type="password" variant="outlined" prepend-inner-icon="mdi-lock" class="mb-2" />
-        <v-btn color="primary" block size="large" class="mt-4 mb-4">
+      <v-form @submit.prevent="submit">
+        <v-text-field label="Nome" variant="outlined" prepend-inner-icon="mdi-account" class="mb-2" v-model="form.name" :error-messages="form.errors.name" />
+        <v-text-field label="Email" type="email" variant="outlined" prepend-inner-icon="mdi-email" class="mb-2" v-model="form.email" :error-messages="form.errors.email" />
+        <v-text-field label="Senha" type="password" variant="outlined" prepend-inner-icon="mdi-lock" class="mb-2" v-model="form.password" :error-messages="form.errors.password" />
+        <v-text-field label="Confirmar Senha" type="password" variant="outlined" prepend-inner-icon="mdi-lock" class="mb-2" v-model="form.password_confirmation" />
+        <v-btn color="primary" block size="large" class="mt-4 mb-4" type="submit" :loading="form.processing">
           Criar Conta
         </v-btn>
 
@@ -32,5 +32,28 @@
   </v-card>
 </template>
 
-<script>
+<script setup>
+import { useForm } from "@inertiajs/vue3";
+import Swal from "sweetalert2";
+
+const form = useForm({
+  name: "",
+  email: "",
+  password: "",
+  password_confirmation: "",
+});
+
+const submit = () => {
+  form.post("/register", {
+    onError: (errors) => {
+      const errorMessages = Object.values(errors).join("\n");
+      Swal.fire({
+        icon: "error",
+        title: "Erro ao criar conta",
+        text: errorMessages,
+        confirmButtonColor: "#1976D2",
+      });
+    },
+  });
+};
 </script>
