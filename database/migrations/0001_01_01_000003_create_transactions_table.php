@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
 
+            // Índices para melhor performance
             $table->index(['from_user_id', 'created_at']);
             $table->index(['to_user_id', 'created_at']);
         });
