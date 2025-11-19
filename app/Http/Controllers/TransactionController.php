@@ -16,7 +16,7 @@ class TransactionController extends Controller
     public function deposit(Request $request)
     {
         $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:1000000'],
         ]);
 
         try {
@@ -85,43 +85,47 @@ class TransactionController extends Controller
     {
         $validated = $request->validate([
             'recipient_id' => ['required', 'integer', 'exists:users,id'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'amount' => ['required', 'numeric', 'min:0.01', 'max:1000000'],
         ]);
-
-        $user = auth()->user();
-
-        // Buscar destinatário por ID
-        $recipient = User::find($validated['recipient_id']);
-
-        if (!$recipient) {
-            return back()->with('error', [
-                'title' => 'Destinatário não encontrado',
-                'message' => 'Nenhum usuário encontrado.',
-            ]);
-        }
-
-        if ($recipient->id === $user->id) {
-            return back()->with('error', [
-                'title' => 'Transferência inválida',
-                'message' => 'Você não pode transferir para si mesmo.',
-            ]);
-        }
-
-        // Verificar saldo
-        if ($user->balance < $validated['amount']) {
-            $saldoFuturo = $user->getBalanceAfter($validated['amount']);
-            return back()->with('error', [
-                'title' => 'Saldo insuficiente',
-                'message' => sprintf(
-                    'Você não tem saldo suficiente. Saldo atual: R$ %s. Após a transferência ficaria: R$ %s',
-                    number_format($user->balance, 2, ',', '.'),
-                    number_format($saldoFuturo, 2, ',', '.')
-                ),
-            ]);
-        }
 
         try {
             DB::beginTransaction();
+
+            // Lock pessimista para prevenir race condition
+            $user = User::where('id', auth()->id())->lockForUpdate()->first();
+
+            // Buscar destinatário por ID
+            $recipient = User::find($validated['recipient_id']);
+
+            if (!$recipient) {
+                DB::rollBack();
+                return back()->with('error', [
+                    'title' => 'Destinatário não encontrado',
+                    'message' => 'Nenhum usuário encontrado.',
+                ]);
+            }
+
+            if ($recipient->id === $user->id) {
+                DB::rollBack();
+                return back()->with('error', [
+                    'title' => 'Transferência inválida',
+                    'message' => 'Você não pode transferir para si mesmo.',
+                ]);
+            }
+
+            // Verificar saldo dentro da transação (após o lock)
+            if ($user->balance < $validated['amount']) {
+                DB::rollBack();
+                $saldoFuturo = $user->getBalanceAfter($validated['amount']);
+                return back()->with('error', [
+                    'title' => 'Saldo insuficiente',
+                    'message' => sprintf(
+                        'Você não tem saldo suficiente. Saldo atual: R$ %s. Após a transferência ficaria: R$ %s',
+                        number_format($user->balance, 2, ',', '.'),
+                        number_format($saldoFuturo, 2, ',', '.')
+                    ),
+                ]);
+            }
 
             $transaction = Transaction::create([
                 'from_user_id' => $user->id,

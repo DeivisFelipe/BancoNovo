@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -24,6 +25,9 @@ return new class extends Migration
             $table->index(['from_user_id', 'created_at']);
             $table->index(['to_user_id', 'created_at']);
         });
+
+        // Adicionar constraint para garantir que amount seja sempre positivo
+        DB::statement('ALTER TABLE transactions ADD CONSTRAINT amount_positive CHECK (amount > 0)');
     }
 
     /**

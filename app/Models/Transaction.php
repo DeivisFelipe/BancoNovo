@@ -7,12 +7,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
-    protected $fillable = [
+    // Usar $guarded ao invés de $fillable para maior segurança
+    protected $guarded = ['id'];
+
+    // Campos que nunca devem ser alterados após criação
+    protected $immutable = [
         'from_user_id',
         'to_user_id',
         'amount',
         'type',
-        'description',
     ];
 
     protected $casts = [
