@@ -21,14 +21,10 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        // Gerar número de conta sequencial
-        $lastAccount = User::max('account_number');
-        $nextAccountNumber = $lastAccount ? str_pad((int)$lastAccount + 1, 6, '0', STR_PAD_LEFT) : '000001';
-
+        // account_number será gerado automaticamente pelo User::boot()
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'account_number' => $nextAccountNumber,
             'password' => Hash::make($validated['password']),
         ]);
 

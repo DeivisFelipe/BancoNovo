@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn() => inertia('Guest/Login'))->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1'); // 5 tentativas por minuto
 
     Route::get('/register', fn() => inertia('Guest/Register'))->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:3,10'); // 3 registros a cada 10 minutos
 });
 
 Route::middleware('auth')->group(function () {
@@ -46,8 +46,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::post('/transfer', [TransactionController::class, 'transfer'])->name('transfer');
-    Route::post('/deposit', [TransactionController::class, 'deposit'])->name('deposit');
+    Route::post('/transfer', [TransactionController::class, 'transfer'])->middleware('throttle:10,1')->name('transfer'); // 10 transferências por minuto
+    Route::post('/deposit', [TransactionController::class, 'deposit'])->middleware('throttle:5,1')->name('deposit'); // 5 depósitos por minuto
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
     Route::get('/search-users', [TransactionController::class, 'searchUsers'])->name('search.users');
 });

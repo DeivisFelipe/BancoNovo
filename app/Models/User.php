@@ -15,15 +15,16 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * The attributes that are NOT mass assignable.
+     * Protege contra mass assignment attacks
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'account_number',
+    protected $guarded = [
+        'id',
+        'account_number', // Gerado automaticamente, nunca pode ser setado manualmente
+        'email_verified_at',
+        'remember_token',
     ];
 
     /**
