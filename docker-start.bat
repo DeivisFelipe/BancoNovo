@@ -2,11 +2,9 @@
 echo Iniciando BancoNovo Docker...
 echo.
 
-REM Copiar arquivo .env se não existir
-if not exist .env (
-    echo Criando arquivo .env...
-    copy .env.docker .env
-)
+REM Copiar arquivo .env
+echo Copiando .env.docker para .env...
+copy /Y .env.docker .env
 
 REM Subir containers
 echo Subindo containers...
@@ -18,10 +16,11 @@ echo BancoNovo Docker iniciado!
 echo ========================================
 echo.
 echo Servicos disponiveis:
-echo - Laravel: http://localhost:8000
-echo - Vite: http://localhost:5174
+echo - Laravel:   http://localhost:8000
+echo - Vite:      http://localhost:5173
+echo - WebSocket: http://localhost:9000
 echo - PostgreSQL: localhost:5432
-echo - pgAdmin: http://localhost:5050
+echo - pgAdmin:   http://localhost:5050
 echo   * Email: admin@banconovo.com
 echo   * Senha: admin123
 echo.
